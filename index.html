@@ -4,10 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>hh.ru - инструментарий</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        html, body{
+            height: 100%;
+        }
+        a{
+            top: calc(50% - 22.5px);
+            position: relative;
+            background-color: #ff4d3a;
+            color: #fff;
+            font-family: "Segoe UI", Arial, sans-serif;
+            text-decoration: none;
+            width: 250px;
+            display: block;
+            text-align: center;
+            padding: 12px 0;
+            border-radius: 4px;
+            margin: auto;
+        }
+    </style>
 </head>
 <body>
-    <a style="background-color: ff4d3a; width: 250px; height: 40px;" href="https://hh.ru/oauth/authorize?
-    response_type=code&
-    client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999">Авторизация</a>
+        <a href="https://hh.ru/oauth/authorize?
+        response_type=code&
+        client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999">Авторизация</a>
 </body>
 </html>
