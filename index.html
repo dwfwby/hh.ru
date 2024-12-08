@@ -51,6 +51,7 @@
         }
     </style>
     <script>
+        try {
         (() => {
             function getCookieValue(name){
                 const regex = new RegExp(`(^| )${name}=([^;]+)`)
@@ -186,6 +187,10 @@
                 document.body.appendChild(button);
             })
         })()
+            
+    } catch (error) {
+            console.log(error)
+        }
     </script>
 </head>
 <body>
