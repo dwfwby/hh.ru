@@ -64,11 +64,15 @@
 
                 document.body.removeChild(element);
             }
-
-            const code = document.location.search.substring(6);
             let resolve;
+            const parsed = URL.parse(document.location);
+            const code = parsed.searchParams.get("code");
+            const isLogout = parsed.searchParams.get("logout");
             const access_token = new Promise(r => resolve = r)
+            
 
+            if(isLogout?.length == 0)
+                document.cookie = "access_token="
             
             if(code){
                 const url = new URL(document.location);
