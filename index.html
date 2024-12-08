@@ -170,7 +170,7 @@
                             const json = await req.json();
                             const { page, items_, pages } = json;
                     
-                            if(!items.length)
+                            if(!items_.length)
                                 break;
                             
                             items = [...items, ...items_]
