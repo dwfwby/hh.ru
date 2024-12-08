@@ -163,38 +163,41 @@
                         let timeoutId;
                         let query = input.value;
                         query = URL.parse(query).search.replace(/(?<=\\?|&)items_on_page(?==)/gm, "per_page");
+                        let items = [];
 
                         for (let i = 0; i < 199; i++) {
                             const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                             const json = await req.json();
-                            const { page, items, pages } = json;
+                            const { page, items_, pages } = json;
                     
                             if(!items.length)
                                 break;
                             
-                            let n = 0;
-
-                            for(e of items){
-                                const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
-                                const json = await req.json();
-                                let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
-
-                                if(name){
-                                    name = `"${name.replaceAll(/("+)/mg, "\"$1")}"`;
-                                    const employmentName = `"${employment.name.replaceAll(/("+)/mg, "\"$1")}"`;
-                                    description = `"${description.replaceAll(/("+)/mg, "\"$1")}"`
-                                    let salFrom = (salary?.from || "") && `От ${salary.from}`;
-                                    let salTo = (salary?.to || "") && ` До ${salary.to} `;
-                                    let sal = `${salFrom}${salTo}${salary?.currency || ""}` || "Неизвестно"
-                                    
-                                    csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
-                                }
-
-                                status.innerHTML = `Выполнено: ${(n+1)*(page+1)} из ${pages*items.length}`;
-                                n++;
-                                await new Promise(r => setTimeout(r, 200))
-                            };
+                            items = [...items, ...items_]
                         }
+
+                        let n = 0;
+
+                        for(e of items){
+                            const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
+                            const json = await req.json();
+                            let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
+
+                            if(name){
+                                name = `"${name.replaceAll(/("+)/mg, "\"$1")}"`;
+                                const employmentName = `"${employment.name.replaceAll(/("+)/mg, "\"$1")}"`;
+                                description = `"${description.replaceAll(/("+)/mg, "\"$1")}"`
+                                let salFrom = (salary?.from || "") && `От ${salary.from}`;
+                                let salTo = (salary?.to || "") && ` До ${salary.to} `;
+                                let sal = `${salFrom}${salTo}${salary?.currency || ""}` || "Неизвестно"
+                                
+                                csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
+                            }
+
+                            status.innerHTML = `Выполнено: ${n} из ${items.length}`;
+                            n++;
+                            await new Promise(r => setTimeout(r, 200))
+                        };
                         
                         status.remove();
                         button.classList.remove("disabled");
