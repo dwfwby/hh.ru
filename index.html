@@ -132,7 +132,7 @@
                     button.onclick = async (e) => {
                         e.preventDefault();
 
-                        button.classList.toggle("disabled");
+                        button.classList.add("disabled");
 
                         let timeoutId;
                         let query = input.value;
@@ -157,8 +157,8 @@
                                     clearTimeout(timeoutId);
 
                                     timeoutId = setTimeout(() => {
-                                        button.classList.toggle("disabled")
-                                    }, 500)
+                                        button.classList.remove("disabled")
+                                    }, 1000)
                                 })();
                                     
 
@@ -172,6 +172,8 @@
                                     
                                     csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
                                 }
+
+                                await new Promise(r => setTimeout(r, 100))
                             };
                         }
                         
