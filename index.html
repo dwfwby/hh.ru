@@ -13,8 +13,13 @@
         html, body{
             height: 100%;
         }
+        body{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
         a{
-            top: calc(50% - 22.5px);
             position: relative;
             background-color: #ff4d3a;
             color: #fff;
@@ -24,14 +29,97 @@
             display: block;
             text-align: center;
             padding: 12px 0;
+            height: 45px;
             border-radius: 4px;
-            margin: auto;
+        }
+        input{
+            width: 250px;
+            height: 45px;
+            border-radius: 4px;
+            outline: none;
+            border: 1px solid lightgray;
+            margin-bottom: 20px;
+            padding: 0 12px 0 12px;
         }
     </style>
+    <script>
+        (() => {
+            const code = document.location.search.substring(6);
+            let resolve;
+            const access_token = new Promise(r => resolve = r)
+
+            
+            if(code){
+                const xhr = new XMLHttpRequest();
+
+                xhr.open("POST", "https://hh.ru/oauth/token");
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.responseType = 'json';
+                xhr.onload = e => resolve(xhr.response?.access_token);
+
+                xhr.send(`client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999&client_secret=S4TIHMCMQPJA1HOHOUB41904VR2MMAP097DULQHQ90B5GG525NPG4CCECB819040&code=${code}&grant_type=authorization_code&redirect_uri=https://dwfwby.github.io/hh.ru/`);
+            }else resolve()
+
+            document.addEventListener("DOMContentLoaded", async function(){
+                const button = document.createElement("a");
+                
+                if(!await access_token){
+                    button.innerHTML = "Авторизация";
+                    button.href = "https://hh.ru/oauth/authorize?response_type=code&client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999";
+                }else{
+                    const api = "https://api.hh.ru/vacancies";
+                    const input = document.createElement("input")
+                    let csv = "Ссылка; Название; Оклад; Опыт; Занятость; Формат; Компания; Область; Описание";
+
+                    input.placeholder = "Ваша ссылка";
+                    input.required = true;
+
+                    document.body.appendChild(input);
+
+                    button.href = "#";
+                    button.innerHTML = "Скачать";
+                    button.onclick = async (e) => {
+                        e.preventDefault();
+
+                        let query = input.value;
+                        query = URL.parse(query).search.replace(/(?<=\\?|&)items_on_page(?==)/gm, "per_page");
+
+                        for (let i = 0; i < 199; i++) {
+                            const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${access_token.promise}`})});
+                            const json = await req.json();
+                            const { page, items } = json;
+                    
+                            if(!items.length)
+                                break;
+                            
+                            let n = 0;
+                            items.forEach(async e => { 
+                                const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`);
+                                const json = await req.json();
+                                let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
+                                
+                                if(name){
+                                    name = `"${name.replaceAll(/("+)/mg, "\"$1")}"`;
+                                    const employmentName = `"${employment.name.replaceAll(/("+)/mg, "\"$1")}"`;
+                                    description = `"${description.replaceAll(/("+)/mg, "\"$1")}"`
+                                    let salFrom = (salary?.from || "") && `От ${salary.from}`;
+                                    let salTo = (salary?.to || "") && ` До ${salary.to} `;
+                                    let sal = `${salFrom}${salTo}${salary?.currency || ""}` || "Неизвестно"
+                                    
+                                    csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
+                                }
+                            });
+                        }
+                        console.log(csv)
+                    }
+
+                }
+
+                document.body.appendChild(button);
+            })
+        })()
+    </script>
 </head>
 <body>
-        <a href="https://hh.ru/oauth/authorize?
-        response_type=code&
-        client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999">Авторизация</a>
 </body>
 </html>
