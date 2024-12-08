@@ -76,7 +76,16 @@
                 xhr.open("POST", "https://hh.ru/oauth/token");
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhr.responseType = 'json';
-                xhr.onload = e => resolve(document.cookie=`access_token=${xhr.response?.access_token || ""}`.substring(13));
+                xhr.onload = e => {
+                    if(!xhr.response.access_token){
+                        const url = new URL(document.location);
+                        url.search = "";
+                        history.pushState({}, "", url);
+                        alert(xhr.response?.errors.value)
+                    }else{
+                        resolve(document.cookie=`access_token=${xhr.response?.access_token || ""}`.substring(13));  
+                    }
+                }
 
                 xhr.send(`client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999&client_secret=S4TIHMCMQPJA1HOHOUB41904VR2MMAP097DULQHQ90B5GG525NPG4CCECB819040&code=${code}&grant_type=authorization_code&redirect_uri=https://dwfwby.github.io/hh.ru/`);
             }else if(getCookieValue("access_token")) 
