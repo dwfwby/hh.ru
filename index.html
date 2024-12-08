@@ -130,7 +130,7 @@
                             
                             let n = 0;
                             items.forEach(async e => { 
-                                const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`);
+                                const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                                 const json = await req.json();
                                 let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
                                 
