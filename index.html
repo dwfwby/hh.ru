@@ -179,7 +179,7 @@
                                     csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
                                 }
 
-                                status.innerHTML = `Выполнено: ${(n+1)*page} из ${pages*items}`;
+                                status.innerHTML = `Выполнено: ${(n+1)*(page+1)} из ${pages*items.length}`;
                                 n++;
                                 await new Promise(r => setTimeout(r, 200))
                             };
