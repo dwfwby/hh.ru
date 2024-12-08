@@ -163,23 +163,22 @@
                         let timeoutId;
                         let query = input.value;
                         query = URL.parse(query).search.replace(/(?<=\\?|&)items_on_page(?==)/gm, "per_page");
-                        let items = [];
+                        let vacancies = [];
 
                         for (let i = 0; i < 199; i++) {
                             const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                             const json = await req.json();
-                            const { page, items_, pages } = json;
+                            const { page, items, pages } = json;
                     
-                            if(!items_.length)
+                            if(!items.length)
                                 break;
                             
-                            items = [...items, ...items_]
+                            items = [...vacancies, ...items]
                         }
 
-                        console.log(items)
                         let n = 0;
 
-                        for(e of items){
+                        for(e of vacancies){
                             const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                             const json = await req.json();
                             let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
