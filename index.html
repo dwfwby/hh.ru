@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/js-online/favicon.png" type="image/x-icon">
+    <link rel="manifest" href="/js-online/manifest.webmanifest">
     <title>hh.ru - инструментарий</title>
     <style>
         *{
@@ -45,22 +47,25 @@
             border: 1px solid lightgray;
             margin-bottom: 20px;
             padding: 0 12px 0 12px;
+            font-size: 16px;
         }
         p{
             margin-top: 10px;
         }
     </style>
     <script>
+        navigator.serviceWorker.register (
+            '/js-online/sw.js',
+            {scope: '/js-online/'}
+        )
         try {
         (() => {
             if(!URL.parse){
                 URL.parse = function(...args){
                     let [ uri, ..._] = args;
-                    uri = uri.toString();
-                    const [ url, search ] = [uri.substring(0, uri.indexOf("?")),
-                    uri.substring(uri.indexOf("?"))];
+                    uri = new URL(uri.toString());
                     
-                    alert(search);
+                    alert(uri);
                     return {search: search, searchParams: new URLSearchParams(search.substring(1))};
                 }
             }
@@ -185,7 +190,7 @@
 
                                 status.innerHTML = `Выполнено: ${(n+1)*(page+1)} из ${pages*items.length}`;
                                 n++;
-                                await new Promise(r => setTimeout(r, 30))
+                                await new Promise(r => setTimeout(r, 200))
                             };
                         }
                         
