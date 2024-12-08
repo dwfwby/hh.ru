@@ -46,6 +46,9 @@
             margin-bottom: 20px;
             padding: 0 12px 0 12px;
         }
+        p{
+            margin-top: 10px;
+        }
     </style>
     <script>
         (() => {
@@ -132,6 +135,9 @@
                     button.onclick = async (e) => {
                         e.preventDefault();
 
+                        const status = document.createElement("p");
+                        document.body.appendChild(status);
+
                         button.classList.add("disabled");
 
                         let timeoutId;
@@ -141,7 +147,7 @@
                         for (let i = 0; i < 199; i++) {
                             const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                             const json = await req.json();
-                            const { page, items } = json;
+                            const { page, items, pages } = json;
                     
                             if(!items.length)
                                 break;
@@ -153,12 +159,12 @@
                                 const json = await req.json();
                                 let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
                                 
-                                req.onload = (() => {
+                                req.onloadend = (() => {
                                     clearTimeout(timeoutId);
 
                                     timeoutId = setTimeout(() => {
                                         button.classList.remove("disabled")
-                                    }, 1000)
+                                    }, 500)
                                 })();
                                     
 
@@ -173,7 +179,9 @@
                                     csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
                                 }
 
-                                await new Promise(r => setTimeout(r, 100))
+                                status.innerHTML = `Выполнено: ${(n+1)*page} из ${pages*items}`;
+                                n++;
+                                await new Promise(r => setTimeout(r, 200))
                             };
                         }
                         
