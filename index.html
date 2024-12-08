@@ -84,7 +84,8 @@
                     if(!xhr.response.access_token){
                         console.log(xhr.response)
                     }else{
-                        resolve((document.cookie=`access_token=${xhr.response?.access_token || ""}`).substring(13));  
+                        document.cookie=`access_token=${xhr.response?.access_token || ""}`;
+                        resolve(xhr.response?.access_token)  
                     }
                 }
 
@@ -120,7 +121,7 @@
                         query = URL.parse(query).search.replace(/(?<=\\?|&)items_on_page(?==)/gm, "per_page");
 
                         for (let i = 0; i < 199; i++) {
-                            const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${access_token}`})});
+                            const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                             const json = await req.json();
                             const { page, items } = json;
                     
