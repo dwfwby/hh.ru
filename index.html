@@ -60,6 +60,7 @@
                     const [ url, search ] = [uri.substring(0, uri.indexOf("?")),
                     uri.substring(uri.indexOf("?") + 1)];
                     
+                    alert(search);
                     return new URLSearchParams(search);
                 }
             }
