@@ -71,6 +71,10 @@
 
             
             if(code){
+                const url = new URL(document.location);
+                url.search = "";
+                history.pushState({}, "", url);
+
                 const xhr = new XMLHttpRequest();
 
                 xhr.open("POST", "https://hh.ru/oauth/token");
@@ -78,9 +82,6 @@
                 xhr.responseType = 'json';
                 xhr.onload = e => {
                     if(!xhr.response.access_token){
-                        const url = new URL(document.location);
-                        url.search = "";
-                        history.pushState({}, "", url);
                         console.log(xhr.response)
                     }else{
                         resolve(document.cookie=`access_token=${xhr.response?.access_token || ""}`.substring(13));  
