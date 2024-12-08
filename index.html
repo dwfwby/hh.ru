@@ -58,10 +58,10 @@
                     let [ uri, ..._] = args;
                     uri = uri.toString();
                     const [ url, search ] = [uri.substring(0, uri.indexOf("?")),
-                    uri.substring(uri.indexOf("?") + 1)];
+                    uri.substring(uri.indexOf("?"))];
                     
                     alert(search);
-                    return new URLSearchParams(search);
+                    return {search: search, searchParams: new URLSearchParams(search.substring(1))};
                 }
             }
 
