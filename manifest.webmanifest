@@ -9,7 +9,7 @@
     "display": "standalone", 
     "icons": [
         {
-          "src": "/hh-ru/favicon.png",
+          "src": "/hh.ru/favicon.png",
           "type": "image/png",
           "sizes": "144x144"
         }
