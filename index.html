@@ -44,6 +44,27 @@
     </style>
     <script>
         (() => {
+            function getCookieValue(name){
+                const regex = new RegExp(`(^| )${name}=([^;]+)`)
+                const match = document.cookie.match(regex)
+                if (match) {
+                    return match[2]
+                }
+            }
+
+            function download(filename, text) {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+            }
+
             const code = document.location.search.substring(6);
             let resolve;
             const access_token = new Promise(r => resolve = r)
@@ -55,14 +76,18 @@
                 xhr.open("POST", "https://hh.ru/oauth/token");
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 xhr.responseType = 'json';
-                xhr.onload = e => resolve(xhr.response?.access_token);
+                xhr.onload = e => resolve(document.cookie=`access_token=${xhr.response?.access_token || ""}`.substring(13));
 
                 xhr.send(`client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999&client_secret=S4TIHMCMQPJA1HOHOUB41904VR2MMAP097DULQHQ90B5GG525NPG4CCECB819040&code=${code}&grant_type=authorization_code&redirect_uri=https://dwfwby.github.io/hh.ru/`);
-            }else resolve()
+            }else if(getCookieValue("access_token")) 
+                resolve(getCookieValue("access_token"));
+            else
+                resolve()
 
             document.addEventListener("DOMContentLoaded", async function(){
                 const button = document.createElement("a");
                 
+                console.log(await access_token)
                 if(!await access_token){
                     button.innerHTML = "Авторизация";
                     button.href = "https://hh.ru/oauth/authorize?response_type=code&client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999";
@@ -85,7 +110,7 @@
                         query = URL.parse(query).search.replace(/(?<=\\?|&)items_on_page(?==)/gm, "per_page");
 
                         for (let i = 0; i < 199; i++) {
-                            const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${access_token.promise}`})});
+                            const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${access_token}`})});
                             const json = await req.json();
                             const { page, items } = json;
                     
@@ -110,7 +135,8 @@
                                 }
                             });
                         }
-                        console.log(csv)
+                        
+                        download("vacancies.csv")
                     }
 
                 }
