@@ -55,8 +55,8 @@
         (() => {
             if(!URL.parse){
                 URL.parse = function(...args){
-                    const [ uri, ..._] = args;
-                    alert(uri);
+                    let [ uri, ..._] = args;
+                    uri = uri.toString();
                     const [ url, search ] = [uri.substring(0, uri.indexOf("?")),
                     uri.substring(uri.indexOf("?") + 1)];
                     
