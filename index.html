@@ -84,7 +84,7 @@
                     if(!xhr.response.access_token){
                         console.log(xhr.response)
                     }else{
-                        resolve(document.cookie=`access_token=${xhr.response?.access_token || ""}`.substring(13));  
+                        resolve((document.cookie=`access_token=${xhr.response?.access_token || ""}`).substring(13));  
                     }
                 }
 
