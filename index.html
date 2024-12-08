@@ -158,15 +158,6 @@
                                 const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                                 const json = await req.json();
                                 let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
-                                
-                                req.onloadend = (() => {
-                                    clearTimeout(timeoutId);
-
-                                    timeoutId = setTimeout(() => {
-                                        button.classList.remove("disabled")
-                                    }, 500)
-                                })();
-                                    
 
                                 if(name){
                                     name = `"${name.replaceAll(/("+)/mg, "\"$1")}"`;
@@ -185,7 +176,9 @@
                             };
                         }
                         
-                        download("vacancies.csv", csv)
+                        status.remove();
+                        button.classList.remove("disabled");
+                        download("vacancies.csv", csv);
                     }
 
                 }
