@@ -32,6 +32,10 @@
             height: 45px;
             border-radius: 4px;
         }
+        a.disabled{
+            pointer-events: none;
+            cursor: default;
+        }
         input{
             width: 250px;
             height: 45px;
@@ -71,12 +75,18 @@
             const access_token = new Promise(r => resolve = r)
             
 
-            if(isLogout?.length == 0)
+            if(isLogout?.length == 0){
                 document.cookie = "access_token="
+
+                const url = new URL(document.location);
+                url.search = "";
+                history.pushState({}, "", url);
+            }
             
             if(code){
                 const url = new URL(document.location);
                 url.search = "";
+
                 history.pushState({}, "", url);
 
                 const xhr = new XMLHttpRequest();
@@ -89,6 +99,7 @@
                         console.log(xhr.response)
                     }else{
                         document.cookie=`access_token=${xhr.response?.access_token || ""}`;
+
                         resolve(xhr.response?.access_token)  
                     }
                 }
@@ -102,7 +113,6 @@
             document.addEventListener("DOMContentLoaded", async function(){
                 const button = document.createElement("a");
                 
-                console.log(await access_token)
                 if(!await access_token){
                     button.innerHTML = "Авторизация";
                     button.href = "https://hh.ru/oauth/authorize?response_type=code&client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999";
@@ -121,6 +131,9 @@
                     button.onclick = async (e) => {
                         e.preventDefault();
 
+                        button.classList.toggle("disabled");
+
+                        let timeoutId;
                         let query = input.value;
                         query = URL.parse(query).search.replace(/(?<=\\?|&)items_on_page(?==)/gm, "per_page");
 
@@ -133,11 +146,21 @@
                                 break;
                             
                             let n = 0;
-                            items.forEach(async e => { 
+
+                            for(e of items){
                                 const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
                                 const json = await req.json();
                                 let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
                                 
+                                req.onload = (() => {
+                                    clearTimeout(timeoutId);
+
+                                    timeoutId = setTimeout(() => {
+                                        button.classList.toggle("disabled")
+                                    }, 500)
+                                })();
+                                    
+
                                 if(name){
                                     name = `"${name.replaceAll(/("+)/mg, "\"$1")}"`;
                                     const employmentName = `"${employment.name.replaceAll(/("+)/mg, "\"$1")}"`;
@@ -148,7 +171,7 @@
                                     
                                     csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
                                 }
-                            });
+                            };
                         }
                         
                         download("vacancies.csv", csv)
