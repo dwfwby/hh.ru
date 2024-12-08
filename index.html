@@ -64,9 +64,8 @@
             if(!URL.parse){
                 URL.parse = function(...args){
                     let [ uri, ..._] = args;
-                    uri = new URL(uri.toString());
+                    const search = new URL(uri.toString()).search;
                     
-                    alert(uri);
                     return {search: search, searchParams: new URLSearchParams(search.substring(1))};
                 }
             }
