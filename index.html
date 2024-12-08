@@ -81,7 +81,7 @@
                         const url = new URL(document.location);
                         url.search = "";
                         history.pushState({}, "", url);
-                        alert(xhr.response?.errors.value)
+                        console.log(xhr.response)
                     }else{
                         resolve(document.cookie=`access_token=${xhr.response?.access_token || ""}`.substring(13));  
                     }
