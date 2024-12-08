@@ -1,6 +1,6 @@
 {
-    "name": "HH vacancies",
-    "short_name": "HHV",
+    "name": "hh.ru Instrument",
+    "short_name": "hh.ru Instrument",
     "description": "Get list vacancies by url with filters",
     "scope": "/hh.ru/",
     "start_url": "/hh.ru/",
