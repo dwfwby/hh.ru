@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="canonical" href="https://dwfwby.github.io/hh.ru/" />
+    <link rel="shortcut icon" href="/js-online/favicon.png" type="image/x-icon">
+    <link rel="manifest" href="/js-online/manifest.webmanifest">
+    <title>hh.ru - инструментарий</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        html, body{
+            height: 100%;
+        }
+        body{
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        a{
+            position: relative;
+            background-color: #ff4d3a;
+            color: #fff;
+            font-family: "Segoe UI", Arial, sans-serif;
+            text-decoration: none;
+            width: 250px;
+            display: block;
+            text-align: center;
+            padding: 12px 0;
+            height: 45px;
+            border-radius: 4px;
+        }
+        a.disabled{
+            pointer-events: none;
+            background-color: lightgray;
+            cursor: default;
+        }
+        input{
+            width: 250px;
+            height: 45px;
+            border-radius: 4px;
+            outline: none;
+            border: 1px solid lightgray;
+            margin-bottom: 20px;
+            padding: 0 12px 0 12px;
+            font-size: 16px;
+        }
+        p{
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        navigator.serviceWorker.register (
+            '/hh.ru/sw.js',
+            {scope: '/hh.ru/'}
+        )
+        try {
+        (() => {
+            if(!URL.parse){
+                URL.parse = function(...args){
+                    let [ uri, ..._] = args;
+                    uri = new URL(uri.toString());
+                    
+                    alert(uri);
+                    return {search: search, searchParams: new URLSearchParams(search.substring(1))};
+                }
+            }
+
+            function getCookieValue(name){
+                const regexp = new RegExp(`(^| )${name}=([^;]+)`)
+                const match = document.cookie.match(regexp)
+                if (match) {
+                    return match[2]
+                }
+            }
+
+            function download(filename, text) {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', filename);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+            }
+            let resolve;
+            const parsed = URL.parse(document.location);
+            const code = parsed.searchParams.get("code");
+            const isLogout = parsed.searchParams.get("logout");
+            const access_token = new Promise(r => resolve = r)
+            
+
+            if(isLogout?.length == 0){
+                document.cookie = "access_token="
+
+                const url = new URL(document.location);
+                url.search = "";
+                history.pushState({}, "", url);
+            }
+            
+            if(code){
+                const url = new URL(document.location);
+                url.search = "";
+
+                history.pushState({}, "", url);
+
+                const xhr = new XMLHttpRequest();
+
+                xhr.open("POST", "https://hh.ru/oauth/token");
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xhr.responseType = 'json';
+                xhr.onload = e => {
+                    if(!xhr.response.access_token){
+                        console.log(xhr.response)
+                    }else{
+                        document.cookie=`access_token=${xhr.response?.access_token || ""}`;
+
+                        resolve(xhr.response?.access_token)  
+                    }
+                }
+
+                xhr.send(`client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999&client_secret=S4TIHMCMQPJA1HOHOUB41904VR2MMAP097DULQHQ90B5GG525NPG4CCECB819040&code=${code}&grant_type=authorization_code&redirect_uri=https://dwfwby.github.io/hh.ru/`);
+            }else if(getCookieValue("access_token")) 
+                resolve(getCookieValue("access_token"));
+            else
+                resolve()
+
+            document.addEventListener("DOMContentLoaded", async function(){
+                const button = document.createElement("a");
+                
+                if(!await access_token){
+                    button.innerHTML = "Авторизация";
+                    button.href = "https://hh.ru/oauth/authorize?response_type=code&client_id=JE7DBGFAL8V2BQJO7VQA6TUKT67LR1N74K80QI6L9E2VCADFO2G9N69I41ABM999";
+                }else{
+                    const api = "https://api.hh.ru/vacancies";
+                    const input = document.createElement("input")
+                    let csv = "Ссылка; Название; Оклад; Опыт; Занятость; Формат; Компания; Область; Описание";
+
+                    input.placeholder = "Ваша ссылка";
+                    input.required = true;
+
+                    document.body.appendChild(input);
+
+                    button.href = "#";
+                    button.innerHTML = "Скачать";
+                    button.onclick = async (e) => {
+                        e.preventDefault();
+
+                        const status = document.createElement("p");
+                        document.body.appendChild(status);
+
+                        button.classList.add("disabled");
+
+                        let timeoutId;
+                        let query = input.value;
+                        query = URL.parse(query).search.replace(/(?<=\\?|&)items_on_page(?==)/gm, "per_page");
+
+                        for (let i = 0; i < 199; i++) {
+                            const req = await fetch(`${api}${query}&page=${i}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
+                            const json = await req.json();
+                            const { page, items, pages } = json;
+                    
+                            if(!items.length)
+                                break;
+                            
+                            let n = 0;
+
+                            for(e of items){
+                                const req = await fetch(`https://api.hh.ru/vacancies/${e.id}`, {headers: new Headers({"Authorization": `Bearer ${await access_token}`})});
+                                const json = await req.json();
+                                let {alternate_url, name, salary, experience, employment, schedule, employer, area, description} = json;
+
+                                if(name){
+                                    name = `"${name.replaceAll(/("+)/mg, "\"$1")}"`;
+                                    const employmentName = `"${employment.name.replaceAll(/("+)/mg, "\"$1")}"`;
+                                    description = `"${description.replaceAll(/("+)/mg, "\"$1")}"`
+                                    let salFrom = (salary?.from || "") && `От ${salary.from}`;
+                                    let salTo = (salary?.to || "") && ` До ${salary.to} `;
+                                    let sal = `${salFrom}${salTo}${salary?.currency || ""}` || "Неизвестно"
+                                    
+                                    csv += `\n${alternate_url};${name};${sal};${experience.name};${employmentName};${schedule.name};${employer.name};${area.name};${description.replace(/<[^>]+>/g, '')}`;
+                                }
+
+                                status.innerHTML = `Выполнено: ${(n+1)*(page+1)} из ${pages*items.length}`;
+                                n++;
+                                await new Promise(r => setTimeout(r, 200))
+                            };
+                        }
+                        
+                        status.remove();
+                        button.classList.remove("disabled");
+                        download("vacancies.csv", csv);
+                    }
+
+                }
+
+                document.body.appendChild(button);
+            })
+        })()
+            
+    } catch (error) {
+            alert(error)
+        }
+    </script>
+</head>
+<body>
+</body>
+</html>

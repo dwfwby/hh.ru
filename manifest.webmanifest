@@ -1,0 +1,19 @@
+{
+    "name": "HH vacancies",
+    "short_name": "HHV",
+    "description": "Get list vacancies by url with filters",
+    "scope": "/hh.ru/",
+    "start_url": "/hh.ru/",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "display": "standalone", 
+    "icons": [
+        {
+          "src": "/hh-ru/favicon.png",
+          "type": "image/png",
+          "sizes": "152x152"
+        }
+    ]
+  }
+
+  
